@@ -6,6 +6,8 @@
 //! The 'Device Model' module contains the Bao Device Model, which is responsible for interacting with the
 //! I/O Request Management System inside the kernel via IOCTLs to Bao the device file descriptor `/dev/bao`.
 
+#![allow(dead_code)]
+
 use bao_sys::{defines::*, error::*, ioctl::*, types::*};
 use libc::ioctl;
 use std::fs::{File, OpenOptions};
