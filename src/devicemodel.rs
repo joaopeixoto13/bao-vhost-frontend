@@ -199,6 +199,8 @@ impl BaoDeviceModel {
             op: BAO_IO_ASK,
             value: 0,
             access_width: 0,
+            cpu_id: 0,
+            vcpu_id: 0,
             ret: 0,
         };
         // Request an I/O request
