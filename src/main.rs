@@ -43,6 +43,7 @@ fn main() {
                                 config_device.addr as u64,
                                 config_guest.ram_addr,
                                 config_guest.ram_size,
+                                config_guest.shmem_path.clone(),
                                 config_guest.socket_path.clone(),
                             ) {
                                 Ok(_) => {

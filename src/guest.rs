@@ -179,6 +179,7 @@ impl BaoGuest {
     /// * `dev_addr` - The address of the device to be added.
     /// * `ram_addr` - The address of the guest's RAM.
     /// * `ram_size` - The size of the guest's RAM.
+    /// * `shmem_path` - The path to the shared memory driver.
     /// * `socket_path` - The path to the socket associated with the device to be added.
     ///
     /// # Returns
@@ -191,6 +192,7 @@ impl BaoGuest {
         dev_addr: u64,
         ram_addr: u64,
         ram_size: u64,
+        shmem_path: String,
         socket_path: String,
     ) -> Result<Arc<BaoDevice>> {
         // Create a new BaoDevice associated with this BaoGuest instance
@@ -200,6 +202,7 @@ impl BaoGuest {
             dev_addr,
             ram_addr,
             ram_size,
+            shmem_path,
             socket_path,
             self.clone(),
         )?;

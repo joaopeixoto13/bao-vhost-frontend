@@ -108,6 +108,7 @@ impl BaoMmio {
     /// * `addr` - MMIO base address.
     /// * `ram_addr` - Guest RAM address to configure the memory region.
     /// * `ram_size` - Guest RAM size to configure the memory region.
+    /// * `shmem_path` - Path to the shared memory file.
     ///
     /// # Returns
     ///
@@ -118,6 +119,7 @@ impl BaoMmio {
         addr: u64,
         ram_addr: u64,
         ram_size: u64,
+        shmem_path: String,
     ) -> Result<Self> {
         // Get the maximum queue sizes.
         let sizes = gdev.queue_max_sizes();
@@ -182,11 +184,9 @@ impl BaoMmio {
         }
 
         // Map the region.
-        // The start address of the region is zero because the memory region is already offseted by the
-        // 'ram_addr' parameter. Providing a non-zero start address with a zero offset will allow a
-        // guest to access memory that does not belong to them and that was not previously allocated
-        // by the Bao hypervisor.
-        match mmio.map_region(GuestAddress(0), "/dev/mem", ram_addr, ram_size as usize) {
+        // The mmap_offset is set to 0 because the base address of Bao's shared memory driver is
+        // already defined statically in the backend device tree.
+        match mmio.map_region(0, &shmem_path, ram_addr, ram_size as usize) {
             Ok(_) => (),
             Err(err) => return Err(err),
         }
@@ -384,9 +384,9 @@ impl BaoMmio {
     ///
     /// # Arguments
     ///
-    /// * `addr` - Base address to map the region.
+    /// * `mmap_offset` - Offset of the mmap region.
     /// * `path` - Path to the file.
-    /// * `offset` - Offset of the file.
+    /// * `base_addr` - Base address of the region.
     /// * `size` - Size of the region.
     ///
     /// # Returns
@@ -394,9 +394,9 @@ impl BaoMmio {
     /// * `Result<()>` - A Result containing Ok(()) on success, or an Error on failure.
     fn map_region(
         &mut self,
-        addr: GuestAddress,
+        mmap_offset: u64,
         path: &str,
-        offset: u64,
+        base_addr: u64,
         size: usize,
     ) -> Result<()> {
         // Open the file.
@@ -408,8 +408,8 @@ impl BaoMmio {
 
         // Create a mmap region with proper permissions.
         let mmap_region = match MmapRegion::build(
-            Some(FileOffset::new(file, 0)),
-            offset as usize + size as usize,
+            Some(FileOffset::new(file, mmap_offset)),
+            base_addr as usize + size as usize,
             PROT_READ | PROT_WRITE,
             MAP_SHARED,
         ) {
@@ -420,7 +420,7 @@ impl BaoMmio {
         };
 
         // Create a guest region mmap.
-        let guest_region_mmap = match GuestRegionMmap::new(mmap_region, addr) {
+        let guest_region_mmap = match GuestRegionMmap::new(mmap_region, GuestAddress(base_addr)) {
             Ok(guest_region_mmap) => guest_region_mmap,
             Err(_) => {
                 return Err(Error::MmapGuestMemoryFailed);

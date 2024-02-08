@@ -121,6 +121,7 @@ impl FrontendGuests {
     /// * `dev_addr` - The Device address of the device to be added.
     /// * `ram_addr` - The RAM base address of the guest to which the device will be added.
     /// * `ram_size` - The RAM size of the guest to which the device will be added.
+    /// * `shmem_path` - The shared memory path of the guest to which the device will be added.
     /// * `socket_path` - The socket path of the guest to which the device will be added.
     ///
     /// # Returns
@@ -134,6 +135,7 @@ impl FrontendGuests {
         dev_addr: u64,
         ram_addr: u64,
         ram_size: u64,
+        shmem_path: String,
         socket_path: String,
     ) -> Result<Arc<BaoDevice>> {
         // Attempts to find the guest with the provided Guest ID.
@@ -144,7 +146,15 @@ impl FrontendGuests {
         };
 
         // Delegates the addition of the device to the found or newly created guest.
-        guest.add_device(dev_id, dev_irq, dev_addr, ram_addr, ram_size, socket_path)
+        guest.add_device(
+            dev_id,
+            dev_irq,
+            dev_addr,
+            ram_addr,
+            ram_size,
+            shmem_path,
+            socket_path,
+        )
     }
 
     /// Removes a device from the guest with the given Guest ID.
@@ -199,6 +209,8 @@ impl BaoFrontend {
     /// * `dev_addr` - The Device address of the device to be added.
     /// * `ram_addr` - The RAM base address of the guest to which the device will be added.
     /// * `ram_size` - The RAM size of the guest to which the device will be added.
+    /// * `shmem_path` - The shared memory path of the guest to which the device will be added.
+    /// * `socket_path` - The socket path of the guest to which the device will be added.
     ///
     /// # Returns
     ///
@@ -213,11 +225,12 @@ impl BaoFrontend {
     /// const DEV_ADDR: u64 = 0xa003e00;
     /// const RAM_ADDR: u64 = 0x60000000;
     /// const RAM_SIZE: u64 = 0x01000000;
+    /// const SHMEM_PATH: String = String::from("/dev/baoipc0");
     /// const SOCKET_PATH: String = String::from("/root/");
     ///
     /// let frontend = BaoFrontend::new().unwrap();
     /// let fe: std::sync::Arc<BaoFrontend> = frontend.clone();
-    /// fe.add_device(GUEST_ID, DEV_ID, DEV_IRQ, DEV_ADDR, RAM_ADDR, RAM_SIZE, SOCKET_PATH).unwrap();
+    /// fe.add_device(GUEST_ID, DEV_ID, DEV_IRQ, DEV_ADDR, RAM_ADDR, RAM_SIZE, SHMEM_PATH, SOCKET_PATH).unwrap();
     /// ```
     pub fn add_device(
         &self,
@@ -227,6 +240,7 @@ impl BaoFrontend {
         dev_addr: u64,
         ram_addr: u64,
         ram_size: u64,
+        shmem_path: String,
         socket_path: String,
     ) -> Result<()> {
         // Adds a device for the given guest_id and dev_id to the guests using a Mutex lock
@@ -237,6 +251,7 @@ impl BaoFrontend {
             dev_addr,
             ram_addr,
             ram_size,
+            shmem_path,
             socket_path,
         )?;
 

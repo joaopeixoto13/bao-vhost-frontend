@@ -142,6 +142,7 @@ impl BaoDevice {
         addr: u64,
         ram_addr: u64,
         ram_size: u64,
+        shmem_path: String,
         socket_path: String,
         guest: Arc<BaoGuest>,
     ) -> Result<Arc<Self>> {
@@ -186,7 +187,7 @@ impl BaoDevice {
         println!("Connected to {} device backend.", dev.name);
 
         // Create the BaoMmio device
-        let mmio = match BaoMmio::new(&gdev, guest.clone(), addr, ram_addr, ram_size) {
+        let mmio = match BaoMmio::new(&gdev, guest.clone(), addr, ram_addr, ram_size, shmem_path) {
             Ok(mmio) => mmio,
             Err(err) => return Err(err),
         };
